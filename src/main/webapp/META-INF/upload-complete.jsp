@@ -2,7 +2,7 @@
 <html>
 <head>
     <script type="text/javascript">
-        window.parent.<%= request.getParameter("callback_function") %>();
+        window.parent.<%= request.getParameter("callback_function") %>("<%= request.getAttribute("file_url") %>");
     </script>
 </head>
 </html>

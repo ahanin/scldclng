@@ -5,6 +5,7 @@ package scldclng;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
@@ -12,7 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +28,8 @@ public class UploadServletTest {
 
     @Before
     public void setUp() throws Exception {
-        uploadServlet = new UploadServlet();
+        final UploadServlet instance = new UploadServlet();
+        uploadServlet = spy(instance);
         req = mock(HttpServletRequest.class);
         resp = mock(HttpServletResponse.class);
     }
@@ -95,12 +100,18 @@ public class UploadServletTest {
             }
         });
 
+        doReturn("http://disney.com/uploads/goofy.jpg")
+                .when(uploadServlet).toUploadedFileUrl("19268176912034829346928", req);
+
         final RequestDispatcher requestDispatcher = mock(RequestDispatcher.class);
         when(req.getRequestDispatcher("/META-INF/upload-complete.jsp")).thenReturn(requestDispatcher);
 
+        final InOrder inOrder = inOrder(req, requestDispatcher);
+
         uploadServlet.doPost(req, resp);
 
-        verify(requestDispatcher).forward(req, resp);
+        inOrder.verify(req).setAttribute("file_url", "http://disney.com/uploads/goofy.jpg");
+        inOrder.verify(requestDispatcher).forward(req, resp);
     }
 
 }

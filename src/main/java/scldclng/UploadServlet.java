@@ -68,6 +68,7 @@ public class UploadServlet extends HttpServlet {
 
             uploader.upload();
 
+            req.setAttribute("file_url", toUploadedFileUrl(uploadId, req));
             req.getRequestDispatcher("/META-INF/upload-complete.jsp").forward(req, resp);
         } finally {
             // cleanup progress data
@@ -75,6 +76,13 @@ public class UploadServlet extends HttpServlet {
                 progressMap.remove(uploadId);
             }
         }
+    }
+
+    String toUploadedFileUrl(final String uploadId, final HttpServletRequest req) {
+        final StringBuffer requestURL = req.getRequestURL();
+        final String requestURI = req.getRequestURI();
+        return requestURL.substring(0, requestURL.length() - requestURI.length()) +
+                req.getContextPath() + "/uploaded/file-" + uploadId;
     }
 
     /**

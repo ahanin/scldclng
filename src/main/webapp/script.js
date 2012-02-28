@@ -21,3 +21,9 @@ if (!window.XMLHttpRequest) {
         }
     }
 }
+
+show = function(id) {
+    var element = $(id);
+    element.style.visibility = 'visible';
+    element.style.display = 'block';
+}

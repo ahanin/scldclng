@@ -8,9 +8,29 @@
         <servlet-class>scldclng.UploadServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>post-servlet</servlet-name>
+        <servlet-class>scldclng.PostServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>uploaded-servlet</servlet-name>
+        <servlet-class>scldclng.ViewServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>upload-servlet</servlet-name>
         <url-pattern>/upload/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>post-servlet</servlet-name>
+        <url-pattern>/post</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>uploaded-servlet</servlet-name>
+        <url-pattern>/uploaded/*</url-pattern>
     </servlet-mapping>
 
 </web-app>
