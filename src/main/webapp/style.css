@@ -1,0 +1,8 @@
+body, td, input {
+  font-family: monospace;
+}
+
+.hidden {
+  visibility: hidden;
+  display: none;
+}

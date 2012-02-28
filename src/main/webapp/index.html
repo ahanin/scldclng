@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+    <script src="script.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        upload = function() {
+            var form = $('file_upload_form');
+            var uuid = newUuid();
+            form.action = "./upload/" + uuid + "?callback_function=upload_complete&uuid=";
+            form.submit();
+
+            $('upload_iframe_el').onload = function() {
+                window.progress_monitor.stop();
+            }
+
+            var pb = $('progress_bar');
+            pb.style.visibility = "visible";
+            pb.style.display = "block";
+
+            window.progress_monitor = new ProgressMonitor(uuid);
+            window.progress_monitor.callback = function(responseText) {
+                $('progress_gauge').innerHTML = responseText + "%";
+            }
+            window.progress_monitor.start();
+        }
+
+        upload_complete = function() {
+            $('progress_gauge').innerHTML = "100%";
+        }
+
+        ProgressMonitor = function(uuid) {
+
+            this.uuid = uuid;
+            this.running = false;
+            this.timeout = 2000;
+            this.got_feedback = false;
+            this.lock = false;
+            this.last_poll_time = 0;
+
+            this.ajax = new XMLHttpRequest();
+            with (this) {
+                ajax.onreadystatechange = function() {
+                    update_progress_callback(ajax);
+                }
+            }
+
+            // checks whether polling is eligible, and if so, polls
+            this.poll = function() {
+                if (this.running && !this.lock && this.it_is_time()) {
+                    this.last_poll_time = new Date().getTime();
+                    this.ajax.open("GET", "./upload/" + this.uuid, true);
+                    this.ajax.send();
+                    this.lock = true;
+                }
+            }
+
+            // tells whether it is poll time already
+            this.it_is_time = function() {
+                return new Date().getTime() - this.last_poll_time >= this.timeout;
+            }
+
+            this.update_progress_callback = function(ajax) {
+                if (ajax.readyState != 4) {
+                    // do nothing
+                } else {
+                    try {
+                        if (ajax.status == 200) {
+                            this.got_feedback = true; // first contact
+                            if (this.running) {
+                                var responseText = ajax.responseText;
+                                if (this.callback && !isNaN(parseInt(responseText))) {
+                                    this.callback(responseText);
+                                }
+                            }
+                        } else if (ajax.status == 0 || ajax.status >= 400 && this.got_feedback) {
+                            // stop monitoring on error or when file is uploaded
+                            this.stop();
+                        }
+                    } finally {
+                        this.lock = false;
+                    }
+                }
+            }
+
+            this.start = function() {
+                this.running = true;
+                with (this) {
+                    // try to poll every 100 milliseconds for better responsiveness
+                    this.interval = setInterval(function() { poll() }, 100);
+                };
+            }
+
+            this.stop = function() {
+                if (this.running) {
+                    this.running = false;
+                    clearInterval(this.interval);
+                }
+            }
+        }
+    </script>
+    <link href="style.css" rel="stylesheet"/>
+</head>
+<body>
+
+<h1>SuperUpload</h1>
+
+<iframe src="" id="upload_iframe_el" name="upload_iframe"
+        height="80"></iframe>
+
+<form id="file_upload_form" action="" enctype="multipart/form-data" method="post"
+      target="upload_iframe">
+    <input id="file_input_field" type="file" name="file_input" onchange="upload()"/>
+</form>
+
+<div id="progress_bar" class="hidden">
+    <label for="progress_gauge">Status:</label><span id="progress_gauge"></span>
+</div>
+
+<form id="post_form" action="./post" method="post">
+    <div>
+        <div><label for="message">Message</label></div>
+        <div>
+            <textarea id="message" name="message_text" rows="10" cols="50"></textarea>
+        </div>
+        <input type="submit"/>
+    </div>
+</form>
+
+</body>
+</html>
+
