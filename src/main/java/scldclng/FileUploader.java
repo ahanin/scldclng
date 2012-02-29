@@ -38,6 +38,7 @@ public class FileUploader {
         final Multipart multipart;
         try {
             multipart = new Multipart(in, boundary);
+            multipart.setProgressListener(progressListener);
             multipart.parse();
         } catch (ParseException e) {
             throw new RuntimeException("Invalid input", e);

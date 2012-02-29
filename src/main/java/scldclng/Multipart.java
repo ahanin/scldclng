@@ -12,6 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Multipart {
+    
+    private ProgressListener progressListener;
 
     private final InputStream input;
 
@@ -35,6 +37,10 @@ public class Multipart {
         this.closingBoundary = ("--" + boundary + "--").getBytes();
     }
 
+    public void setProgressListener(final ProgressListener progressListener) {
+        this.progressListener = progressListener;
+    }
+
     public List<MimePart> getParts() {
         return parts;
     }
@@ -47,9 +53,13 @@ public class Multipart {
         boolean eof = false;
 
         while (!eof && (line = readLine()) != null) {
-
+            
             offset += line.length;
             lineNo++;
+
+            if (progressListener != null) {
+                progressListener.onBytesRead(offset);
+            }
 
             switch (readState) {
                 case BEGIN_READ:
