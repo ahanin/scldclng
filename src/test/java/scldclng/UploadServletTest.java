@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -92,7 +95,7 @@ public class UploadServletTest {
     public void testPostShouldRedirectToUploadCompleteWhenFinished() throws Exception {
         when(req.getPathInfo()).thenReturn("/19268176912034829346928");
         when(req.getHeader("Content-Length")).thenReturn("10403");
-        when(req.getContentType()).thenReturn("multipart/form-data");
+        when(req.getHeader("Content-Type")).thenReturn("multipart/form-data; boundary=xyz");
         when(req.getInputStream()).thenReturn(new ServletInputStream() {
             @Override
             public int read() throws IOException {
@@ -101,7 +104,7 @@ public class UploadServletTest {
         });
 
         doReturn("http://disney.com/uploads/goofy.jpg")
-                .when(uploadServlet).toUploadedFileUrl("19268176912034829346928", req);
+                .when(uploadServlet).toUploadedFileUrl(eq("19268176912034829346928"), any(String.class), same(req));
 
         final RequestDispatcher requestDispatcher = mock(RequestDispatcher.class);
         when(req.getRequestDispatcher("/META-INF/upload-complete.jsp")).thenReturn(requestDispatcher);

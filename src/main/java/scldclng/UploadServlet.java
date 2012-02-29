@@ -42,7 +42,7 @@ public class UploadServlet extends HttpServlet {
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
             IOException {
         final String uploadId = fetchUploadId(req);
-        if (uploadId == null || !req.getContentType().toLowerCase().startsWith("multipart/form-data")) {
+        if (uploadId == null || !req.getHeader("Content-Type").toLowerCase().startsWith("multipart/form-data")) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
             doUpload(uploadId, req, resp);
@@ -52,7 +52,7 @@ public class UploadServlet extends HttpServlet {
     private void doUpload(final String uploadId, final HttpServletRequest req, final HttpServletResponse resp)
             throws ServletException, IOException {
 
-        final FileUploader uploader = new FileUploader(req);
+        final FileUploader uploader = new FileUploader(req, "file_input");
 
         try {
             final long contentLength = Long.parseLong(req.getHeader("Content-Length"));
@@ -66,23 +66,26 @@ public class UploadServlet extends HttpServlet {
                 uploader.setProgressListener(progressListener);
             }
 
-            uploader.upload();
+            final String filename = uploader.upload(); // extract original filename
 
-            req.setAttribute("file_url", toUploadedFileUrl(uploadId, req));
+            req.setAttribute("file_url", toUploadedFileUrl(uploadId, filename, req));
             req.getRequestDispatcher("/META-INF/upload-complete.jsp").forward(req, resp);
         } finally {
             // cleanup progress data
-            synchronized (progressMap) {
-                progressMap.remove(uploadId);
-            }
+            progressMap.remove(uploadId);
         }
     }
 
-    String toUploadedFileUrl(final String uploadId, final HttpServletRequest req) {
+    String toUploadedFileUrl(final String uploadId, final String filename, final HttpServletRequest req) {
         final StringBuffer requestURL = req.getRequestURL();
         final String requestURI = req.getRequestURI();
-        return requestURL.substring(0, requestURL.length() - requestURI.length()) +
-                req.getContextPath() + "/uploaded/file-" + uploadId;
+        final StringBuilder sb = new StringBuilder()
+                .append(requestURL.substring(0, requestURL.length() - requestURI.length()))
+                .append(req.getContextPath()).append("/uploaded/").append(uploadId);
+        if (filename != null) {
+            sb.append("-").append(filename);
+        }
+        return sb.toString();
     }
 
     /**
