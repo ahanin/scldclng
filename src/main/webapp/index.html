@@ -26,6 +26,11 @@
         }
 
         upload_complete = function(file_url) {
+            // stop right now
+            if (window.progress_monitor) {
+                window.progress_monitor.stop();
+            }
+
             $('progress_gauge').innerHTML = "100%";
 
             $('file_url_field').value = file_url;

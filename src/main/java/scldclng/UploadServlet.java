@@ -78,10 +78,11 @@ public class UploadServlet extends HttpServlet {
 
     String toUploadedFileUrl(final String uploadId, final String filename, final HttpServletRequest req) {
         final StringBuffer requestURL = req.getRequestURL();
-        final String requestURI = req.getRequestURI();
+        final String pathInfo = req.getPathInfo();
+        final String servletPath = req.getServletPath();
         final StringBuilder sb = new StringBuilder()
-                .append(requestURL.substring(0, requestURL.length() - requestURI.length()))
-                .append(req.getContextPath()).append("/uploaded/").append(uploadId);
+                .append(requestURL.substring(0, requestURL.length() - pathInfo.length() - servletPath.length()))
+                .append("/uploaded/").append(uploadId);
         if (filename != null) {
             sb.append("-").append(filename);
         }
