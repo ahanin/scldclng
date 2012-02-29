@@ -1,0 +1,6 @@
+Simple asynchronous file upload application without using 3rd-party libraries.
+
+Parses multipart data into parts and provides feedback channel for monitoring
+progress of particular uploads (see scldclng.Multipart).
+
+NOTE: does not actually do file save, just shows a concept behind progress bar.
